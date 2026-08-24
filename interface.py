@@ -146,7 +146,7 @@ else:
     # ------------------------------------------------------------
     # TAB 2: GEOMETRIA 2D DINÂMICA
     # ------------------------------------------------------------
-    with tabtab = tab2:
+    with tab2:
         st.subheader("Esquema do Bocal e Localização da Onda de Choque")
         fig_esquema = desenhar_esquema_bocal(Ai, At, Ae, Lc, Ld, xs)
         st.pyplot(fig_esquema)
