@@ -49,7 +49,7 @@ def desenhar_esquema_bocal(Ai, At, Ae, Lc, Ld, xs=None):
     ax.annotate('', xy=(Lc + Ld, -re), xytext=(Lc + Ld, re), arrowprops=dict(arrowstyle='<->', color='blue', lw=1.2))
     ax.text(Lc + Ld + 0.08, 0, f"Ae = {Ae:.2f} m²", color='blue', va='center', ha='left', fontweight='bold')
 
-    # Cotas horizontais (Comprimentos Lc e Ld) - Posicionadas com folga abaixo da parede
+    # Cotas horizontais (Comprimentos Lc e Ld)
     r_max = max(ri, re)
     y_cota = -r_max * 1.35
     
@@ -59,13 +59,15 @@ def desenhar_esquema_bocal(Ai, At, Ae, Lc, Ld, xs=None):
     ax.annotate('', xy=(Lc, y_cota), xytext=(Lc + Ld, y_cota), arrowprops=dict(arrowstyle='<->', color='black', lw=1.2))
     ax.text(Lc + Ld / 2, y_cota - 0.08, f"Ld = {Ld:.2f} m", ha='center', va='top', fontweight='bold')
 
-    # Ajuste dos limites dos eixos para não cortar os textos nem sobrepor o label axial
+    # Ajuste dos limites dos eixos
     ax.set_ylim(y_cota - 0.35, r_max * 1.45)
     
+    # REMOVER ESCALA E RÓTULO DO EIXO Y
+    ax.set_yticks([])
+
     # Configurações de exibição do gráfico
     ax.set_title("Esquema Geométrico do Bocal com Posição do Choque", fontsize=12, pad=15)
     ax.set_xlabel("Posição Axial x (m)", labelpad=10)
-    ax.set_ylabel("Raio Equivalente (m)")
     ax.grid(True, linestyle=':', alpha=0.5)
     ax.legend(loc='upper right')
 
