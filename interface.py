@@ -35,7 +35,7 @@ if limites:
     pb_min = float(limites["Pb_min"])
     pb_max = float(limites["Pb_max"])
     st.sidebar.info(f"Domínio de choque: {pb_min/1000:.2f} kPa a {pb_max/1000:.2f} kPa")
-    Pb = st.sidebar.slider("Contrapressão Pb (Pa)", min_value=pb_min, max_value=pb_max, value=80000.0, step=500.0)
+    Pb = st.sidebar.slider("Contrapressão Pb (Pa)", min_value=pb_min, max_value=pb_max, value=80000.0, step=100.0)
 else:
     Pb = st.sidebar.number_input("Contrapressão Pb (Pa)", value=80000.0)
 
