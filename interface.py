@@ -23,7 +23,7 @@ def desenhar_esquema_bocal(Ai, At, Ae, Lc, Ld, xs=None):
     x_parede = [0, Lc, Lc + Ld]
     y_parede = [ri, rt, re]
 
-    fig, ax = plt.subplots(figsize=(10, 4))
+    fig, ax = plt.subplots(figsize=(10, 4.5))
 
     # Desenho do perfil do bocal (Parede Superior e Inferior)
     ax.plot(x_parede, y_parede, 'k-', linewidth=2.5, label="Parede do Bocal")
@@ -34,7 +34,6 @@ def desenhar_esquema_bocal(Ai, At, Ae, Lc, Ld, xs=None):
 
     # Indicação da Linha do Choque Normal (se calculado)
     if xs is not None:
-        # Raio local no choque
         rs = np.sqrt((At + (Ae - At) * ((xs - Lc) / Ld)) / np.pi)
         ax.plot([xs, xs], [-rs, rs], 'r--', linewidth=2.5, label=f"Onda de Choque (xs = {xs:.3f} m)")
         ax.scatter([xs], [0], color='red', zorder=5)
@@ -42,31 +41,38 @@ def desenhar_esquema_bocal(Ai, At, Ae, Lc, Ld, xs=None):
     # --- COTAS E DIMENSÕES ---
     # Cotas verticais (Diâmetros / Áreas)
     ax.annotate('', xy=(0, -ri), xytext=(0, ri), arrowprops=dict(arrowstyle='<->', color='blue', lw=1.2))
-    ax.text(-0.05, 0, f"Ai = {Ai:.2f} m²", color='blue', va='center', ha='right', fontweight='bold')
+    ax.text(-0.08, 0, f"Ai = {Ai:.2f} m²", color='blue', va='center', ha='right', fontweight='bold')
 
     ax.annotate('', xy=(Lc, -rt), xytext=(Lc, rt), arrowprops=dict(arrowstyle='<->', color='blue', lw=1.2))
-    ax.text(Lc, rt + 0.05, f"At = {At:.2f} m²", color='blue', ha='center', va='bottom', fontweight='bold')
+    ax.text(Lc, rt + 0.08, f"At = {At:.2f} m²", color='blue', ha='center', va='bottom', fontweight='bold')
 
     ax.annotate('', xy=(Lc + Ld, -re), xytext=(Lc + Ld, re), arrowprops=dict(arrowstyle='<->', color='blue', lw=1.2))
-    ax.text(Lc + Ld + 0.05, 0, f"Ae = {Ae:.2f} m²", color='blue', va='center', ha='left', fontweight='bold')
+    ax.text(Lc + Ld + 0.08, 0, f"Ae = {Ae:.2f} m²", color='blue', va='center', ha='left', fontweight='bold')
 
-    # Cotas horizontais (Comprimentos Lc e Ld)
-    y_cota = -max(ri, re) * 1.25
+    # Cotas horizontais (Comprimentos Lc e Ld) - Posicionadas com folga abaixo da parede
+    r_max = max(ri, re)
+    y_cota = -r_max * 1.35
+    
     ax.annotate('', xy=(0, y_cota), xytext=(Lc, y_cota), arrowprops=dict(arrowstyle='<->', color='black', lw=1.2))
-    ax.text(Lc / 2, y_cota - 0.05, f"Lc = {Lc:.2f} m", ha='center', va='top')
+    ax.text(Lc / 2, y_cota - 0.08, f"Lc = {Lc:.2f} m", ha='center', va='top', fontweight='bold')
 
     ax.annotate('', xy=(Lc, y_cota), xytext=(Lc + Ld, y_cota), arrowprops=dict(arrowstyle='<->', color='black', lw=1.2))
-    ax.text(Lc + Ld / 2, y_cota - 0.05, f"Ld = {Ld:.2f} m", ha='center', va='top')
+    ax.text(Lc + Ld / 2, y_cota - 0.08, f"Ld = {Ld:.2f} m", ha='center', va='top', fontweight='bold')
 
+    # Ajuste dos limites dos eixos para não cortar os textos nem sobrepor o label axial
+    ax.set_ylim(y_cota - 0.35, r_max * 1.45)
+    
     # Configurações de exibição do gráfico
-    ax.set_aspect('equal', adjustable='datalim')
     ax.set_title("Esquema Geométrico do Bocal com Posição do Choque", fontsize=12, pad=15)
-    ax.set_xlabel("Posição Axial x (m)")
+    ax.set_xlabel("Posição Axial x (m)", labelpad=10)
     ax.set_ylabel("Raio Equivalente (m)")
     ax.grid(True, linestyle=':', alpha=0.5)
     ax.legend(loc='upper right')
 
     return fig
+
+
+   
 
 
 # ============================================================
