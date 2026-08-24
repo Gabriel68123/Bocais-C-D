@@ -11,6 +11,65 @@ st.title("🚀 Simulador de Bocal Convergente-Divergente (C-D)")
 st.markdown("Análise de escoamento unidimensional com choque normal interno.")
 
 # ============================================================
+# FUNÇÃO PARA DESENHAR O BOCAL COM COTAS E CHOQUE
+# ============================================================
+def desenhar_esquema_bocal(Ai, At, Ae, Lc, Ld, xs=None):
+    # Cálculo dos raios (assumindo seção circular A = pi * r^2)
+    ri = np.sqrt(Ai / np.pi)
+    rt = np.sqrt(At / np.pi)
+    re = np.sqrt(Ae / np.pi)
+
+    # Pontos da parede superior
+    x_parede = [0, Lc, Lc + Ld]
+    y_parede = [ri, rt, re]
+
+    fig, ax = plt.subplots(figsize=(10, 4))
+
+    # Desenho do perfil do bocal (Parede Superior e Inferior)
+    ax.plot(x_parede, y_parede, 'k-', linewidth=2.5, label="Parede do Bocal")
+    ax.plot(x_parede, [-y for y in y_parede], 'k-', linewidth=2.5)
+
+    # Linha de centro (Eixo de simetria)
+    ax.axhline(0, color='gray', linestyle='-.', alpha=0.6, label="Eixo de Simetria")
+
+    # Indicação da Linha do Choque Normal (se calculado)
+    if xs is not None:
+        # Raio local no choque
+        rs = np.sqrt((At + (Ae - At) * ((xs - Lc) / Ld)) / np.pi)
+        ax.plot([xs, xs], [-rs, rs], 'r--', linewidth=2.5, label=f"Onda de Choque (xs = {xs:.3f} m)")
+        ax.scatter([xs], [0], color='red', zorder=5)
+
+    # --- COTAS E DIMENSÕES ---
+    # Cotas verticais (Diâmetros / Áreas)
+    ax.annotate('', xy=(0, -ri), xytext=(0, ri), arrowprops=dict(arrowstyle='<->', color='blue', lw=1.2))
+    ax.text(-0.05, 0, f"Ai = {Ai:.2f} m²", color='blue', va='center', ha='right', fontweight='bold')
+
+    ax.annotate('', xy=(Lc, -rt), xytext=(Lc, rt), arrowprops=dict(arrowstyle='<->', color='blue', lw=1.2))
+    ax.text(Lc, rt + 0.05, f"At = {At:.2f} m²", color='blue', ha='center', va='bottom', fontweight='bold')
+
+    ax.annotate('', xy=(Lc + Ld, -re), xytext=(Lc + Ld, re), arrowprops=dict(arrowstyle='<->', color='blue', lw=1.2))
+    ax.text(Lc + Ld + 0.05, 0, f"Ae = {Ae:.2f} m²", color='blue', va='center', ha='left', fontweight='bold')
+
+    # Cotas horizontais (Comprimentos Lc e Ld)
+    y_cota = -max(ri, re) * 1.25
+    ax.annotate('', xy=(0, y_cota), xytext=(Lc, y_cota), arrowprops=dict(arrowstyle='<->', color='black', lw=1.2))
+    ax.text(Lc / 2, y_cota - 0.05, f"Lc = {Lc:.2f} m", ha='center', va='top')
+
+    ax.annotate('', xy=(Lc, y_cota), xytext=(Lc + Ld, y_cota), arrowprops=dict(arrowstyle='<->', color='black', lw=1.2))
+    ax.text(Lc + Ld / 2, y_cota - 0.05, f"Ld = {Ld:.2f} m", ha='center', va='top')
+
+    # Configurações de exibição do gráfico
+    ax.set_aspect('equal', adjustable='datalim')
+    ax.set_title("Esquema Geométrico do Bocal com Posição do Choque", fontsize=12, pad=15)
+    ax.set_xlabel("Posição Axial x (m)")
+    ax.set_ylabel("Raio Equivalente (m)")
+    ax.grid(True, linestyle=':', alpha=0.5)
+    ax.legend(loc='upper right')
+
+    return fig
+
+
+# ============================================================
 # BARRA LATERAL - ENTRADA DE DADOS
 # ============================================================
 st.sidebar.header("⚙️ Parâmetros de Entrada")
@@ -35,7 +94,7 @@ if limites:
     pb_min = float(limites["Pb_min"])
     pb_max = float(limites["Pb_max"])
     st.sidebar.info(f"Domínio de choque: {pb_min/1000:.2f} kPa a {pb_max/1000:.2f} kPa")
-    Pb = st.sidebar.slider("Contrapressão Pb (Pa)", min_value=pb_min, max_value=pb_max, value=80000.0, step=50.0)
+    Pb = st.sidebar.number_input("Contrapressão Pb (Pa)", min_value=pb_min, max_value=pb_max, value=80000.0, step=100.0)
 else:
     Pb = st.sidebar.number_input("Contrapressão Pb (Pa)", value=80000.0)
 
@@ -48,11 +107,11 @@ if resultado is None:
     st.error("Não foi possível encontrar solução de choque para esses parâmetros ou a contrapressão está fora do domínio físico.")
 else:
     perfil = resultado["perfil"]
-    estado = resultado["estado_choque"]  # Corrigido de 'estado' para 'estado_choque'
+    estado = resultado["estado_choque"]
     saida = resultado["saida"]
     xs = resultado["xs"]
 
-    tab1, tab2, tab3 = st.tabs(["📊 Resultados", "📈 Gráficos", "🔍 Validação"])
+    tab1, tab2, tab3, tab4 = st.tabs(["📊 Resultados", "📐 Geometria 2D", "📈 Gráficos", "🔍 Validação"])
 
     # ------------------------------------------------------------
     # TAB 1: RESULTADOS
@@ -85,9 +144,17 @@ else:
             st.table(df_saida)
 
     # ------------------------------------------------------------
-    # TAB 2: GRÁFICOS
+    # TAB 2: GEOMETRIA 2D DINÂMICA
     # ------------------------------------------------------------
-    with tab2:
+    with tabtab = tab2:
+        st.subheader("Esquema do Bocal e Localização da Onda de Choque")
+        fig_esquema = desenhar_esquema_bocal(Ai, At, Ae, Lc, Ld, xs)
+        st.pyplot(fig_esquema)
+
+    # ------------------------------------------------------------
+    # TAB 3: GRÁFICOS
+    # ------------------------------------------------------------
+    with tab3:
         st.subheader("Distribuição ao longo do Bocal")
 
         fig, ax = plt.subplots(3, 1, figsize=(10, 10), sharex=True)
@@ -118,9 +185,9 @@ else:
         st.pyplot(fig)
 
     # ------------------------------------------------------------
-    # TAB 3: VALIDAÇÃO
+    # TAB 4: VALIDAÇÃO
     # ------------------------------------------------------------
-    with tab3:
+    with tab4:
         st.subheader("Tabela de Validação de Contrapressões")
         res_validacao = validar_modelo(pb_min, pb_max, 10, Ai, At, Ae, Lc, Ld, gamma, P01, T01)
         df_val = pd.DataFrame(res_validacao)
